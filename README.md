@@ -1,8 +1,8 @@
 # DiscMath_laba_3
 
-tests:
+tests:  
 
-(x_1 + x_2)
+(x_1 + x_2)  
 (x_1 & x_2)
 (x_1 @ x_2)
 (x_1 ~ x_2)
