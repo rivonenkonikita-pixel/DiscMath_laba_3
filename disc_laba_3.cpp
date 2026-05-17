@@ -9,46 +9,57 @@
 
 struct Node
 {
+    //виртуальный деструктор, чтобы при удалении указателя на базовый класс правильно уничтожались дочерние объекты
     virtual ~Node() = default;
+    //Вычисляет значение логического выражения при заданных переменных
     virtual bool evaluate(const std::map<std::string, bool>& vars) const=0;
+    //собирает все переменные, встречающиеся в подвыражении, и записывает их в множество
     virtual void collectVariables(std::set<std::string>& vars) const=0;
 };
 
+//Узел, который хранит имя переменной, возвращает её значение по словарю
 struct VariableNode: Node
 {
-    std::string name;
-    VariableNode(const std::string& n): name(n) {}
+    std::string name; //Поле, которое хранит имя переменной
+    VariableNode(const std::string& n): name(n) {} //Инициалиация поля с помощью конструктора
+    //Из словаря vars находим значение нужной переменной
     bool evaluate(const std::map<std::string, bool>& vars) const override
     {
         std::map<std::string, bool>::const_iterator it=vars.find(name);
-        if (it==vars.end())
+        if (it==vars.end()) //Если не нашли переменную
         {
             std::cerr<<"Ошибка: переменная "<<name<<" не найдена!"<<std::endl;
             exit(1);
         }
-        return it->second;
+        return it->second; //Возвращаем значение
     }
+    //Добавляет имя переменной в множество vars
     void collectVariables(std::set<std::string>& vars) const override
     {
         vars.insert(name);
     }
 };
 
+//Узел с унарной операцией(отрицанием)
 struct UnaryOpNode: Node
 {
-    Node* expr;
-    UnaryOpNode(Node* e): expr(e) {};
-    ~UnaryOpNode() {delete expr;}
+    //поле, которое является указателем типа Node на объект для работы 
+    Node* expr; //Указатель на подвыражение, к которому применяется операция
+    UnaryOpNode(Node* e): expr(e) {}; //Принимает указатель на подвыражение еб, тело конструктора пустое
+    ~UnaryOpNode() {delete expr;} //Деструктор удаляет подвыражение expr, на которое указывает поле
+    //Вычисляет значение отрицания
     bool evaluate(const std::map<std::string, bool>& vars) const override
     {
         return !expr->evaluate(vars);
     }
+    //рекурсивно вызывает функцию, для сбора всех переменных в подвыражении 
     void collectVariables(std::set<std::string>& vars) const override
     {
         expr->collectVariables(vars);
     }
 };
 
+//Узел с бинарными операциями
 struct BinaryOpNode: Node
 {
     Node* left;
